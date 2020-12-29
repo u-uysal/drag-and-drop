@@ -8,7 +8,52 @@ function App() {
   const [state, setState] = useState(initialData);
 
   const onDragEndHandler = (result) => {
-    //
+    console.log(result);
+    const { destination, source, draggableId } = result;
+
+    // hedef yoksa oldugun yere geri dön
+    if (!destination) {
+      return;
+    }
+
+    //task aynı yere tekrar konduysa bir şey yapma
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return;
+    }
+
+    //kaynak columu bulma
+    const column = state.columns[source.droppableId];
+
+    //column'da bulunan tüm task Idleri
+    const newTaskIds = Array.from(column.taskIds);
+
+    //hangi task'ınyerin değişirse onu kaynak columdan silerek hedef columa ekleme
+    newTaskIds.splice(source.index, 1);
+    newTaskIds.splice(destination.index, 0, draggableId);
+
+    console.log(newTaskIds);
+
+    //taskları yeni haliyle tekrar yazma
+    const newColumn = {
+      ...column,
+      taskIds: newTaskIds,
+    };
+
+    console.log(newColumn);
+
+    //taskları şekillenmiş columu update etme
+    const newState = {
+      ...state,
+      columns: {
+        ...state.columns,
+        [newColumn.id]: newColumn,
+      },
+    };
+
+    setState(newState);
   };
 
   return (
