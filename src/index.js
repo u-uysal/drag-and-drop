@@ -1,17 +1,20 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React, { useState } from "react";
+import ReactDOM from "react-dom";
+import initialData from "./initial-data";
+import Column from "./Column";
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+function App() {
+  const [state, setState] = useState(initialData);
+  return state.columnOrder.map((item) => {
+    //sıraya bağlı tüm columnlar
+    const column = state.columns[item];
+    //column' bağlı tasklar
+    const tasks = column.taskIds.map((taskId) => state.tasks[taskId]);
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+    return <Column key={column.id} column={column} tasks={tasks} />;
+  });
+}
+
+export default App;
+
+ReactDOM.render(<App />, document.getElementById("root"));
