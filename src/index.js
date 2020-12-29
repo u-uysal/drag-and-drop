@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import initialData from "./initial-data";
 import { DragDropContext } from "react-beautiful-dnd";
 import Column from "./Column";
+import styles from "./Index.module.css";
 
 function App() {
   const [state, setState] = useState(initialData);
@@ -24,48 +25,71 @@ function App() {
       return;
     }
 
-    //kaynak columu bulma
-    const column = state.columns[source.droppableId];
+    const start = state.columns[source.droppableId]; // başlangıc
+    console.log(start);
+    const finish = state.columns[destination.droppableId]; // hedef
+    console.log(finish);
 
-    //column'da bulunan tüm task Idleri
-    const newTaskIds = Array.from(column.taskIds);
+    if (start === finish) {
+      const newTaskIds = Array.from(start.taskIds);
+      newTaskIds.splice(source.index, 1);
+      newTaskIds.splice(destination.index, 0, draggableId);
 
-    //hangi task'ınyerin değişirse onu kaynak columdan silerek hedef columa ekleme
-    newTaskIds.splice(source.index, 1);
-    newTaskIds.splice(destination.index, 0, draggableId);
+      const newColumn = {
+        ...finish,
+        taskIds: newTaskIds,
+      };
 
-    console.log(newTaskIds);
+      const newState = {
+        ...state,
+        columns: {
+          ...state.columns,
+          [newColumn.id]: newColumn,
+        },
+      };
 
-    //taskları yeni haliyle tekrar yazma
-    const newColumn = {
-      ...column,
-      taskIds: newTaskIds,
+      setState(newState);
+      return;
+    }
+
+    // Moving from one list to another
+    const startTaskIds = Array.from(start.taskIds);
+    startTaskIds.splice(source.index, 1);
+    const newStart = {
+      ...start,
+      taskIds: startTaskIds,
     };
 
-    console.log(newColumn);
+    const finishTaskIds = Array.from(finish.taskIds);
+    finishTaskIds.splice(destination.index, 0, draggableId);
+    const newFinish = {
+      ...finish,
+      taskIds: finishTaskIds,
+    };
 
-    //taskları şekillenmiş columu update etme
     const newState = {
       ...state,
       columns: {
         ...state.columns,
-        [newColumn.id]: newColumn,
+        [newStart.id]: newStart,
+        [newFinish.id]: newFinish,
       },
     };
-
     setState(newState);
   };
 
   return (
     <DragDropContext onDragEnd={onDragEndHandler}>
-      {state.columnOrder.map((item) => {
-        //sıraya bağlı tüm columnlar
-        const column = state.columns[item];
-        //column' bağlı tasklar
-        const tasks = column.taskIds.map((taskId) => state.tasks[taskId]);
+      <div className={styles.container}>
+        {state.columnOrder.map((item) => {
+          //sıraya bağlı tüm columnlar
+          const column = state.columns[item];
+          //column' bağlı tasklar
+          const tasks = column.taskIds.map((taskId) => state.tasks[taskId]);
 
-        return <Column key={column.id} column={column} tasks={tasks} />;
-      })}
+          return <Column key={column.id} column={column} tasks={tasks} />;
+        })}
+      </div>
     </DragDropContext>
   );
 }
